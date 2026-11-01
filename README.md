@@ -1,6 +1,5 @@
 # Celestial Orbits
 ![img.png](img.png)
-![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/NebulaModLab/Celestial-Orbits/total?style=for-the-badge&color=%234D23A8&link=https%3A%2F%2Fgithub.com%2FNebulaModLab%2FCelestial-Orbits%2Freleases)
 > "I kinda wish we had an orbital trajectory line for anything we lock onto in the map"  
 > \- S0medudewhodoesthings, KMB "starsector-general" chat
 
