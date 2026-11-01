@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Celestial-Orbits.iml" filepath="$PROJECT_DIR$/Celestial-Orbits.iml" />
+      <module fileurl="file://$PROJECT_DIR$/PN-Celestial-Orbits.iml" filepath="$PROJECT_DIR$/PN-Celestial-Orbits.iml" />
     </modules>
   </component>
 </project>

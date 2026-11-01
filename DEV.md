@@ -5,6 +5,7 @@
     - [X] Research Behaviour
     - [X] Research Time Required
     - [X] Course Focus Behaviour
+    - [X] Faction Orbit Color
     - [X] Custom Orbit Color
     - [X] Orbit Color Picker
     - [X] Orbit Color Alpha

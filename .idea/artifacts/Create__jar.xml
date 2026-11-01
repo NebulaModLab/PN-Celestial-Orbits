@@ -2,7 +2,7 @@
   <artifact type="jar" build-on-make="true" name="Create .jar">
     <output-path>$PROJECT_DIR$/jars</output-path>
     <root id="archive" name="CelestialOrbits.jar">
-      <element id="module-output" name="Celestial-Orbits" />
+      <element id="module-output" name="PN-Celestial-Orbits" />
     </root>
   </artifact>
 </component>

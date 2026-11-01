@@ -118,7 +118,6 @@ public class EntityOrbitRenderer extends BaseCustomEntityPlugin {
             filteredDuplicateRadii = true;
         }
         else {
-
             // Iterate through list of unique orbital entities
             for (Map.Entry<SectorEntityToken, Float> uniqueOrbit : uniqueOrbits.entrySet()) {
 
@@ -128,7 +127,6 @@ public class EntityOrbitRenderer extends BaseCustomEntityPlugin {
                 dBlue = 1.0f;
                 dAlpha = 0.18f;
 
-                // TODO 2 BOOLEAN CHECKS, 1 FOR FACTION, 1 FOR CUSTOM ORBIT COLOR
                 // Set orbit line colors
                 // Set orbit line color alpha
                 Integer colorAlphaInt = LunaSettings.getInt("PN_CelestialOrbits", "celorb_orbitColorAlpha");
@@ -167,43 +165,7 @@ public class EntityOrbitRenderer extends BaseCustomEntityPlugin {
                             dBlue = 1.0f;
                         }
                     }
-
                 }
-
-
-
-
-
-////        if (Boolean.TRUE.equals(LunaSettings.getBoolean("PN_CelestialOrbits", "celorb_orbitColorBoolean"))) {
-//                String orbitColorSetting = LunaSettings.getString("PN_CelestialOrbits", "celorb_orbitColorRadio");
-//                if (orbitColorSetting != null && orbitColorSetting.equals("Factions")) {
-//                    // Check if unique orbit entity has a market, if not, default color
-//                    if (uniqueOrbit.getKey().getMarket() != null) {
-//
-//                    }
-//                    else {
-//
-//                    }
-//
-//                } else if (orbitColorSetting != null && orbitColorSetting.equals("Custom")) {
-//                    Color color = LunaSettings.getColor("PN_CelestialOrbits", "celorb_orbitColorPicker");
-//                    if (color != null) {
-//                        dRed = (float) color.getRed() / 255;
-//                        dGreen = (float) color.getGreen() / 255;
-//                        dBlue = (float) color.getBlue() / 255;
-//                    }
-//                    else {
-//                        log.error("Failed to grab custom color value.");
-//                        dRed = 0.7f;
-//                        dGreen = 0.8f;
-//                        dBlue = 1.0f;
-//                    }
-//                }
-//                else {
-//                    dRed = 0.7f;
-//                    dGreen = 0.8f;
-//                    dBlue = 1.0f;
-//                }
 
                 // Skip entities that shouldn't have an orbit drawn
                 if (isForbiddenEntityType(uniqueOrbit.getKey())) continue;
@@ -227,12 +189,15 @@ public class EntityOrbitRenderer extends BaseCustomEntityPlugin {
                     PlanetAPI planet = (PlanetAPI) uniqueOrbit.getKey();
                     if (planet.isBlackHole()) continue;
                 } else if (visualsSetting.equals("Stations Included")) {
+
                     // Check if orbit object is a jump point object - continue if so
                     if (uniqueOrbit.getKey() instanceof JumpPointAPI) continue;
+
                     // Check if orbit object has certain tag - continue if so
                     List<String> excluded_tags = Arrays.asList(Tags.COMM_RELAY, Tags.GATE, Tags.NAV_BUOY,
                             Tags.SENSOR_ARRAY, Tags.WARNING_BEACON);
                     if (excluded_tags.stream().anyMatch(uniqueOrbit.getKey()::hasTag)) continue;
+
                     // Check if orbit object is a station - continue or show dependent on statement and setting
                     if (uniqueOrbit.getKey().hasTag(Tags.STATION) && uniqueOrbit.getKey().getMarket() != null &&
                             !LunaSettings.getString("PN_CelestialOrbits", "celorb_researchRadio").equals("Always show")) {
@@ -260,12 +225,14 @@ public class EntityOrbitRenderer extends BaseCustomEntityPlugin {
 
                 int segments = 192; // 128–256
 
+                // Run Orbit Research setting checks
                 if (uniqueOrbit.getKey() instanceof PlanetAPI) {
                     PlanetAPI planet = (PlanetAPI) uniqueOrbit.getKey();
-
+                    // If research setting is set to "On Full Survey"
                     if (researchSetting.equals("On Full Survey")) {
                         if (planet.getMarket().getSurveyLevel() != MarketAPI.SurveyLevel.FULL) continue;
                     }
+                    // If research setting is set to "Witnessed"
                     else if (researchSetting.equals("Witnessed")) {
                         // Populate researchTime setting variable
                         String researchTimeSetting = LunaSettings.getString(
@@ -292,78 +259,39 @@ public class EntityOrbitRenderer extends BaseCustomEntityPlugin {
                 if (courseFocusSetting == null)
                     throw new RuntimeException("Unable to find LunaSetting 'celorb_courseFocusRadio' for mod 'PN_CelestialOrbits'");
 
+                // Run Course Focus coloring
                 if (currentCourseTarget != null && currentCourseTarget.getOrbitFocus() != null) {
+                    // If Course Focus is set to "Highlight"
                     if (courseFocusSetting.equals("Highlight") && currentCourseTarget == uniqueOrbit.getKey()) {
-                        Color color = new Color(241, 185, 0, 50);
+                        Color color = new Color(241, 185, 0);
                         if (color != null) {
                             dRed = (float) color.getRed() / 255;
                             dGreen = (float) color.getGreen() / 255;
                             dBlue = (float) color.getBlue() / 255;
+                            dAlpha = 0.18f;
                         }
                     }
+                    // If Course Focus is set to "Filter"
                     else if (courseFocusSetting.equals("Filter")) {
-                        Color color = new Color(136, 112, 34, 20);
+                        Color color = new Color(241, 185, 0);
                         if (color != null) {
                             dRed = (float) color.getRed() / 255;
                             dGreen = (float) color.getGreen() / 255;
                             dBlue = (float) color.getBlue() / 255;
+                            dAlpha = 0.18f;
                         }
                         // Makes it so only the filtered orbit shows
                         center = currentCourseTarget.getOrbitFocus().getLocation();
                         radius = currentCourseTarget.getCircularOrbitRadius();
+                        // Draw orbit and stop the loop early since no more need to be drawn anyhow
+                        drawEntityOrbit(segments, center, radius, thickness);
+                        break;
                     }
-//                    else {
-//                        if (Boolean.TRUE.equals(LunaSettings.getBoolean("PN_CelestialOrbits", "celorb_orbitColorCustomBoolean"))) {
-//                            Color color = LunaSettings.getColor("PN_CelestialOrbits", "celorb_orbitColorPicker");
-//                            if (color != null) {
-//                                dRed = (float) color.getRed() / 255;
-//                                dGreen = (float) color.getGreen() / 255;
-//                                dBlue = (float) color.getBlue() / 255;
-//                            }
-//                            else {
-//                                log.error("Failed to grab custom color value.");
-//                                dRed = 0.7f;
-//                                dGreen = 0.8f;
-//                                dBlue = 1.0f;
-//                            }
-//                        } else if (Boolean.TRUE.equals(LunaSettings.getBoolean("PN_CelestialOrbits", "celorb_orbitColorRadio"))) {
-//                            // TODO Market Faction Colors
-//
-//                        } else {
-//                            dRed = 0.7f;
-//                            dGreen = 0.8f;
-//                            dBlue = 1.0f;
-//                        }
-//                    }
                 }
 
                 drawEntityOrbit(segments, center, radius, thickness);
             }
         }
-
-
-
-        SectorEntityToken currentCourseTarget = Global.getSector().getCampaignUI().getCurrentCourseTarget();
-
-        if (currentCourseTarget == null) return;
-        if (!(currentCourseTarget instanceof PlanetAPI)) return;
-
-//        PlanetAPI planet = (PlanetAPI) currentCourseTarget;
-
-
-        // Red Square Test
-//        GL11.glDisable(GL11.GL_TEXTURE_2D);
-//
-//        GL11.glColor3f(1f, 0f, 0f);
-//
-//        GL11.glPointSize(10);
-//
-//        GL11.glBegin(GL11.GL_POINTS);
-//        GL11.glVertex2f(
-//                planet.getLocation().x,
-//                planet.getLocation().y
-//        );
-//        GL11.glEnd();
 
 
     }
@@ -388,6 +316,13 @@ public class EntityOrbitRenderer extends BaseCustomEntityPlugin {
         return comparingOrbitalPeriod;
     }
 
+    /**
+     * Draws the entity orbit
+     * @param segments Amount of segments the orbits need to be drawn in
+     * @param center The center coords of the entity's orbital center
+     * @param radius The radius that the entity's orbit needs to be drawn in
+     * @param thickness The thickness of the orbit lines
+     */
     private void drawEntityOrbit(int segments, Vector2f center, float radius, float thickness) {
         GL11.glEnable(GL11.GL_BLEND);
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
@@ -421,6 +356,11 @@ public class EntityOrbitRenderer extends BaseCustomEntityPlugin {
         GL11.glEnd();
     }
 
+    /**
+     * Checks if the given entity is of a forbidden entity type
+     * @param entity Entity to be checked
+     * @return True if entity is listed as forbidden from being drawn
+     */
     public boolean isForbiddenEntityType(SectorEntityToken entity) {
 
         if (entity.getOrbitFocus() == null) return true;
@@ -438,6 +378,10 @@ public class EntityOrbitRenderer extends BaseCustomEntityPlugin {
         return false;
     }
 
+    /**
+     * Populates the blacklist with entity types
+     * @return Entire String Set containing the blacklisted entities
+     */
     public Set<String> populateEntityBlacklist() {
         Set<String> entityBlacklist = new HashSet<>();
         if (!visualsSetting.equals("All Celestial Objects")) {
