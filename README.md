@@ -41,7 +41,9 @@ way of surveying a planet's orbital trajectory.
 
 ### F.A.Q. 
 > Q: Can this be removed mid-save?  
-> A: Yes, **BUT** with a requirement, being you **MUST** have left your save in hyperspace and not within a star system.
+> A: Yes, **BUT** with a requirement, being ONE of the following:
+>    1. You have left your save in hyperspace and not within a star system.
+>    2. You disabled the mod through LunaSettings.
 
 ### Credits
 - Fractal Softworks for the amazing game we all love to play
