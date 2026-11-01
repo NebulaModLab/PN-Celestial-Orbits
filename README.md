@@ -7,6 +7,8 @@ That message is what got me going down a rabbit hole, although in the end not as
 deep as I thought, on how to make orbital trajectory lines show up for things that 
 orbit around celestial objects. And thus, "Celestial Orbits" was born.
 
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/NebulaModLab/Celestial-Orbits/total?style=for-the-badge&color=%234D23A8&link=https%3A%2F%2Fgithub.com%2FNebulaModLab%2FCelestial-Orbits%2Freleases)
+
 ## What is "Celestial Orbits"?
 By default, this mod allows you to learn and see the orbital trajectory of planetary 
 bodies upon doing a full survey of a planet. Why a full survey of a planet? For 
