@@ -6,7 +6,6 @@ import com.fs.starfarer.api.campaign.CampaignFleetAPI;
 import com.fs.starfarer.api.campaign.StarSystemAPI;
 import com.fs.starfarer.api.campaign.rules.MemoryAPI;
 import lunalib.lunaSettings.LunaSettings;
-import org.lazywizard.console.Console;
 
 public class SystemTimeTracker implements EveryFrameScript {
     @Override

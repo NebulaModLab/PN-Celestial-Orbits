@@ -7,7 +7,10 @@ import com.fs.starfarer.api.combat.ViewportAPI;
 import com.fs.starfarer.api.impl.campaign.BaseCustomEntityPlugin;
 import com.fs.starfarer.api.impl.campaign.econ.impl.OrbitalStation;
 import com.fs.starfarer.api.impl.campaign.ids.Entities;
+import com.fs.starfarer.api.impl.campaign.ids.Factions;
 import com.fs.starfarer.api.impl.campaign.ids.Tags;
+import com.fs.starfarer.api.impl.campaign.rulecmd.salvage.SalvageSpecialInteraction;
+import com.fs.starfarer.api.impl.campaign.rulecmd.salvage.special.ShipRecoverySpecial;
 import com.fs.starfarer.api.util.Misc;
 import com.fs.starfarer.campaign.CampaignAsteroid;
 import com.fs.starfarer.campaign.CampaignTerrain;
@@ -15,6 +18,7 @@ import com.fs.starfarer.campaign.RingBand;
 import com.fs.starfarer.campaign.fleet.CampaignFleet;
 import lunalib.lunaSettings.LunaSettings;
 import org.apache.log4j.Logger;
+import org.lazywizard.console.Console;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Vector2f;
 
@@ -65,28 +69,6 @@ public class EntityOrbitRenderer extends BaseCustomEntityPlugin {
     public void render(CampaignEngineLayers layer, ViewportAPI viewport) {
 
         if (layer != CampaignEngineLayers.TERRAIN_2) return;
-
-        if (Boolean.TRUE.equals(LunaSettings.getBoolean("PN_CelestialOrbits", "celorb_orbitColorBoolean"))) {
-            Color color = LunaSettings.getColor("PN_CelestialOrbits", "celorb_orbitColorPicker");
-            if (color != null) {
-                dRed = (float) color.getRed() / 255;
-                dGreen = (float) color.getGreen() / 255;
-                dBlue = (float) color.getBlue() / 255;
-            }
-            else {
-                log.error("Failed to grab custom color value.");
-                dRed = 0.7f;
-                dGreen = 0.8f;
-                dBlue = 1.0f;
-            }
-        }
-        else {
-            dRed = 0.7f;
-            dGreen = 0.8f;
-            dBlue = 1.0f;
-        }
-        Integer colorAlphaInt = LunaSettings.getInt("PN_CelestialOrbits", "celorb_orbitColorAlpha");
-        if (colorAlphaInt != null) dAlpha = (float) colorAlphaInt / 255;
 
         // If visual or research setting changed, clear orbits, repopulate blacklist, run duplicate filter again
         if (!visualsSetting.equals(LunaSettings.getString("PN_CelestialOrbits", "celorb_visualsRadio")) ||
@@ -139,6 +121,89 @@ public class EntityOrbitRenderer extends BaseCustomEntityPlugin {
 
             // Iterate through list of unique orbital entities
             for (Map.Entry<SectorEntityToken, Float> uniqueOrbit : uniqueOrbits.entrySet()) {
+
+                // Set default color values
+                dRed = 0.7f;
+                dGreen = 0.8f;
+                dBlue = 1.0f;
+                dAlpha = 0.18f;
+
+                // TODO 2 BOOLEAN CHECKS, 1 FOR FACTION, 1 FOR CUSTOM ORBIT COLOR
+                // Set orbit line colors
+                // Set orbit line color alpha
+                Integer colorAlphaInt = LunaSettings.getInt("PN_CelestialOrbits", "celorb_orbitColorAlpha");
+                if (colorAlphaInt != null) dAlpha = (float) colorAlphaInt / 255;
+
+                // if custom color is enabled, change color to custom
+                if (Boolean.TRUE.equals(LunaSettings.getBoolean("PN_CelestialOrbits", "celorb_orbitColorCustomBoolean"))) {
+                    Color color = LunaSettings.getColor("PN_CelestialOrbits", "celorb_orbitColorPicker");
+                    if (color != null) {
+                        dRed = (float) color.getRed() / 255;
+                        dGreen = (float) color.getGreen() / 255;
+                        dBlue = (float) color.getBlue() / 255;
+                    }
+                    else {
+                        log.error("Failed to grab custom color value.");
+                        dRed = 0.7f;
+                        dGreen = 0.8f;
+                        dBlue = 1.0f;
+                    }
+                }
+
+                // if faction color is enabled, and market has faction owner that is not neutral, change color to faction primary color
+                if (Boolean.TRUE.equals(LunaSettings.getBoolean("PN_CelestialOrbits", "celorb_orbitColorFactionBoolean"))) {
+                    MarketAPI market = uniqueOrbit.getKey().getMarket();
+                    if (market != null && market.getFaction() != null && !market.getFaction().getId().equals(Factions.NEUTRAL)) {
+                        Color color = market.getFaction().getColor();
+                        if (color != null) {
+                            dRed = (float) color.getRed() / 255;
+                            dGreen = (float) color.getGreen() / 255;
+                            dBlue = (float) color.getBlue() / 255;
+                        }
+                        else {
+                            log.error("Failed to grab custom color value.");
+                            dRed = 0.7f;
+                            dGreen = 0.8f;
+                            dBlue = 1.0f;
+                        }
+                    }
+
+                }
+
+
+
+
+
+////        if (Boolean.TRUE.equals(LunaSettings.getBoolean("PN_CelestialOrbits", "celorb_orbitColorBoolean"))) {
+//                String orbitColorSetting = LunaSettings.getString("PN_CelestialOrbits", "celorb_orbitColorRadio");
+//                if (orbitColorSetting != null && orbitColorSetting.equals("Factions")) {
+//                    // Check if unique orbit entity has a market, if not, default color
+//                    if (uniqueOrbit.getKey().getMarket() != null) {
+//
+//                    }
+//                    else {
+//
+//                    }
+//
+//                } else if (orbitColorSetting != null && orbitColorSetting.equals("Custom")) {
+//                    Color color = LunaSettings.getColor("PN_CelestialOrbits", "celorb_orbitColorPicker");
+//                    if (color != null) {
+//                        dRed = (float) color.getRed() / 255;
+//                        dGreen = (float) color.getGreen() / 255;
+//                        dBlue = (float) color.getBlue() / 255;
+//                    }
+//                    else {
+//                        log.error("Failed to grab custom color value.");
+//                        dRed = 0.7f;
+//                        dGreen = 0.8f;
+//                        dBlue = 1.0f;
+//                    }
+//                }
+//                else {
+//                    dRed = 0.7f;
+//                    dGreen = 0.8f;
+//                    dBlue = 1.0f;
+//                }
 
                 // Skip entities that shouldn't have an orbit drawn
                 if (isForbiddenEntityType(uniqueOrbit.getKey())) continue;
@@ -247,21 +312,29 @@ public class EntityOrbitRenderer extends BaseCustomEntityPlugin {
                         center = currentCourseTarget.getOrbitFocus().getLocation();
                         radius = currentCourseTarget.getCircularOrbitRadius();
                     }
-                    else {
-                        if (Boolean.TRUE.equals(LunaSettings.getBoolean("PN_CelestialOrbits", "celorb_orbitColorBoolean"))) {
-                            Color color = LunaSettings.getColor("PN_CelestialOrbits", "celorb_orbitColorPicker");
-                            if (color != null) {
-                                dRed = (float) color.getRed() / 255;
-                                dGreen = (float) color.getGreen() / 255;
-                                dBlue = (float) color.getBlue() / 255;
-                            }
-                        }
-                        else {
-                            dRed = 0.7f;
-                            dGreen = 0.8f;
-                            dBlue = 1.0f;
-                        }
-                    }
+//                    else {
+//                        if (Boolean.TRUE.equals(LunaSettings.getBoolean("PN_CelestialOrbits", "celorb_orbitColorCustomBoolean"))) {
+//                            Color color = LunaSettings.getColor("PN_CelestialOrbits", "celorb_orbitColorPicker");
+//                            if (color != null) {
+//                                dRed = (float) color.getRed() / 255;
+//                                dGreen = (float) color.getGreen() / 255;
+//                                dBlue = (float) color.getBlue() / 255;
+//                            }
+//                            else {
+//                                log.error("Failed to grab custom color value.");
+//                                dRed = 0.7f;
+//                                dGreen = 0.8f;
+//                                dBlue = 1.0f;
+//                            }
+//                        } else if (Boolean.TRUE.equals(LunaSettings.getBoolean("PN_CelestialOrbits", "celorb_orbitColorRadio"))) {
+//                            // TODO Market Faction Colors
+//
+//                        } else {
+//                            dRed = 0.7f;
+//                            dGreen = 0.8f;
+//                            dBlue = 1.0f;
+//                        }
+//                    }
                 }
 
                 drawEntityOrbit(segments, center, radius, thickness);
