@@ -45,6 +45,9 @@ way of surveying a planet's orbital trajectory.
 >    1. You have left your save in hyperspace and not within a star system.
 >    2. You disabled the mod through LunaSettings.
 
+### AI use disclaimer
+No AI was used in the creation of this mod's code or graphical assets
+
 ### Credits
 - Fractal Softworks for the amazing game we all love to play
 - Vexlia & Crablobab for helping me identify orbital junk entities
