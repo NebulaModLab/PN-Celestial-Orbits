@@ -14,6 +14,9 @@ import lunalib.lunaSettings.LunaSettings;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Tracks if the player fleet is within a system, and if so adds the renderer to the system
+ */
 public class InSystemTracker implements EveryFrameScript {
 
     private SectorEntityToken orbitDrawEntity;
@@ -36,6 +39,19 @@ public class InSystemTracker implements EveryFrameScript {
 
     @Override
     public void advance(float amount) {
+
+        // If mod is disabled in LunaSettings-
+        if (Boolean.TRUE.equals(LunaSettings.getBoolean("PN_CelestialOrbits", "celorb_disableModBoolean"))) {
+            // -and values are populated:
+            if (lastSystem != null && orbitDrawEntity != null) {
+                // Remove render entity
+                lastSystem.removeEntity(orbitDrawEntity);
+                // Reset values to null
+                lastSystem = null;
+                orbitDrawEntity = null;
+            }
+            return;
+        }
 
         CampaignFleetAPI playerFleet = Global.getSector().getPlayerFleet();
 
@@ -98,6 +114,11 @@ public class InSystemTracker implements EveryFrameScript {
 
     }
 
+    /**
+     * Checks if game state is safe to draw orbital trajectories
+     * @param playerFleet Player fleet object
+     * @return true or false according to the state of the game and "Disable mod" LunaSetting
+     */
     private boolean isSafeToDraw(CampaignFleetAPI playerFleet) {
         if (playerFleet.isInHyperspace()) return false;
         if (Boolean.TRUE.equals(LunaSettings.getBoolean("PN_CelestialOrbits", "celorb_disableModBoolean"))) return false;

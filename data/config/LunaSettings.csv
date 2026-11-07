@@ -14,14 +14,16 @@ celorb_visualsRadio,Visuals Behaviour,Radio,Only Planetary Bodies,"Only Planetar
 
 Default: [Only Planetary Bodies]",,,Settings
 celorb_research,Orbit Research,Header,Orbit Research,,,,,Settings
-celorb_researchRadio,Research Behaviour,Radio,On Full Survey,"On Full Survey,Always show,Witnessed","Changes the orbit research Behaviour.
+celorb_researchRadio,Research Behaviour,Radio,On Full Survey,"On Full Survey,Preliminary,Always show,Passively,Orbital","Changes the orbit research Behaviour.
 [On Full Survey] - Fully survey a planet to know its orbit
+[Preliminary] - Preliminary survey a planet to know its orbit (Has an extra setting 'Auto Preliminary Survey' in the 'Extras' tab)
 [Always show] - Always shows orbits without needing to survey or otherwise interact
-[Witnessed] - Show orbits when the time spent in a system equals or is above the rotation span in days. (See next option)
+[Passively] - Discover orbits passively as you spend time within a system. (See next option)
+[Orbital] - Discover orbits by hanging out in a planets orbit for some time. When done on a planet with moons, also discovers the orbits of those moons.
 
 Default: [On Full Survey]",,,Settings
-celorb_researchTimeRadio,Research Time Required,Radio,Quarter Rotation,"Quarter Rotation,Half Rotation,Full Rotation","(Only active with the former setting set to 'Witnessed')
-Changes how much total time you need to spend in a system to research a celestial object's orbit.
+celorb_researchTimeRadio,Research Time Required,Radio,Quarter Rotation,"Quarter Rotation,Half Rotation,Full Rotation","(Only active with 'Research Behaviour' set to 'Passively' or 'Orbital')
+Changes how much total time you need to spend to research a celestial object's orbit. Only affects not yet discovered orbits.
 [Quarter Rotation] - A quarter rotation around the orbital focus (star or other planet)
 [Half Rotation] - Half a rotation around the orbital focus
 [Full Rotation] - 1 full rotation around the orbital focus
@@ -58,7 +60,11 @@ celorb_orbitColorAlpha,Orbit Color Alpha,Int,45,,"Choose the brightness/alpha le
 
 Default: [45]",12,255,Settings
 
+# =================== Extra's tab ===================
+celorb_autoPreliminarySurveyBoolean,Auto Preliminary Survey,Boolean,false,,"Enables you to preliminary survey planets by flying within sensor range of them.
+This is a built-in Quality of Life extra in case you are playing with the 'Preliminary' 'Research Behaviour' setting and would like to receive preliminary surveys easier/quicker.
 
+Default: [False]",,,Extras
 #luna_exampleHeader,Example Header,Header,Example Section,,,,,Examples
 #luna_exampleText,Example Text Field,Text,Any value below is merely an example for Modders. None of the Settings here do anything.,,,,,Examples
 #luna_exampleString,Example String,String,some string,,"Strings will accept any characters put in, with no filtering.",,,Examples

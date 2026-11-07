@@ -3,7 +3,7 @@
     "name":"Celestial Orbits",
     "author":"Purple Nebula",
     "utility":"true",
-    "version":"1.0.0",
+    "version":{"major":1, "minor":1, "patch":0},
     "description":"Celestial Orbits visualizes the orbit trajectory of celestial objects in the game.",
     "gameVersion": "0.98a-RC8",
     "jars":["jars/CelestialOrbits.jar"],

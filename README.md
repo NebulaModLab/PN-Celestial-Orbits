@@ -30,14 +30,23 @@ way of surveying a planet's orbital trajectory.
   - Change the learning/unlocking behavior:
     - "On Full Survey": Requires the player to fully survey a planet. **(default)**
     - "Always show": Shows every orbital trajectory.
-    - "Witnessed": Requires you to spend a certain amount of time in the 
-      system as a planet's rotation has passed to learn the orbital trajectory.
-      - **Extra setting:** Choice between full, half, and third of the witnessed 
-        rotation time required.
+    - "Preliminary": Preliminary survey a planet to know its orbit (Has an extra setting 'Auto Preliminary Survey' in 
+      the 'Extras' tab)
+    - "Passively": Discover orbits passively as you spend time within a system.
+      - **Extra setting:** Choice between full, half, and third of the orbital 
+        rotation time.
+    - "Orbital": Discover orbits by hanging out in a planets orbit for some time. When done on a planet with moons, also
+      discovers the orbits of those moons.
   - Change the "Course focus" behavior:
     - "Highlight": Highlights the course target's orbit. **(default)**
     - "Filter": Filters out the course target's orbit, showing only that orbit.
-    - "Disabled": Disabled the functionality"
+    - "Disabled": Disabled the functionality.
+  - Change the color of trajectories:
+    - Switch option to enable/disable faction coloring.
+      - If a planet/station has a faction owner, change color to the faction's.
+    - Switch option to enable/disable custom coloring.
+      - Built-in LunaSetting color picker
+    - Slider option to change the alpha level of the trajectories, controlling the transparency/opacity
 
 ### F.A.Q. 
 > Q: Can this be removed mid-save?  

@@ -2,6 +2,8 @@ package purplenebula.celestialorbits.renderers;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.*;
+import com.fs.starfarer.api.campaign.comm.IntelInfoPlugin;
+import com.fs.starfarer.api.campaign.comm.IntelManagerAPI;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.combat.ViewportAPI;
 import com.fs.starfarer.api.impl.campaign.BaseCustomEntityPlugin;
@@ -15,12 +17,14 @@ import com.fs.starfarer.api.util.Misc;
 import com.fs.starfarer.campaign.CampaignAsteroid;
 import com.fs.starfarer.campaign.CampaignTerrain;
 import com.fs.starfarer.campaign.RingBand;
+import com.fs.starfarer.campaign.comms.v2.IntelManager;
 import com.fs.starfarer.campaign.fleet.CampaignFleet;
 import lunalib.lunaSettings.LunaSettings;
 import org.apache.log4j.Logger;
 import org.lazywizard.console.Console;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Vector2f;
+import purplenebula.celestialorbits.intel.PlanetOrbitDiscoveryIntel;
 
 import java.awt.*;
 import java.util.*;
@@ -40,12 +44,6 @@ public class EntityOrbitRenderer extends BaseCustomEntityPlugin {
     float dGreen = 0.8f;
     float dBlue = 1.0f;
     float dAlpha = 0.18f;
-
-//    private PlanetAPI planet;
-//
-//    public EntityOrbitRenderer(PlanetAPI planet) {
-//        this.planet = planet;
-//    }
 
     private SectorEntityToken entity;
 
@@ -69,6 +67,9 @@ public class EntityOrbitRenderer extends BaseCustomEntityPlugin {
     public void render(CampaignEngineLayers layer, ViewportAPI viewport) {
 
         if (layer != CampaignEngineLayers.TERRAIN_2) return;
+
+        if (Boolean.TRUE.equals(LunaSettings.getBoolean("PN_CelestialOrbits", "celorb_disableModBoolean"))) return;
+
 
         // If visual or research setting changed, clear orbits, repopulate blacklist, run duplicate filter again
         if (!visualsSetting.equals(LunaSettings.getString("PN_CelestialOrbits", "celorb_visualsRadio")) ||
@@ -219,34 +220,30 @@ public class EntityOrbitRenderer extends BaseCustomEntityPlugin {
                 // Get entity circular orbit radius
                 float radius = uniqueOrbit.getKey().getCircularOrbitRadius();
 
-
-
-                float thickness = Math.max(1.5f, viewport.getViewMult() * 2f); // Zoom-scaled thickness
-
-                int segments = 192; // 128–256
-
                 // Run Orbit Research setting checks
                 if (uniqueOrbit.getKey() instanceof PlanetAPI) {
                     PlanetAPI planet = (PlanetAPI) uniqueOrbit.getKey();
                     // If research setting is set to "On Full Survey"
                     if (researchSetting.equals("On Full Survey")) {
+                        // // Skip showing the orbit if it isn't fully surveyed
                         if (planet.getMarket().getSurveyLevel() != MarketAPI.SurveyLevel.FULL) continue;
                     }
-                    // If research setting is set to "Witnessed"
-                    else if (researchSetting.equals("Witnessed")) {
-                        // Populate researchTime setting variable
-                        String researchTimeSetting = LunaSettings.getString(
-                                "PN_CelestialOrbits", "celorb_researchTimeRadio"
-                        );
-                        // Check if researchTimeSetting is null, if so, throw an error
-                        if (researchTimeSetting == null) throw new RuntimeException(
-                                "Unable to find LunaSetting 'celorb_researchTimeRadio' for mod 'PN_CelestialOrbits'"
-                        );
+                    // If research setting is set to "Preliminary"
+                    else if (researchSetting.equals("Preliminary")) {
+                        // Skip showing the orbit if it isn't fully or preliminary surveyed
+                        if (planet.getMarket().getSurveyLevel() != MarketAPI.SurveyLevel.FULL &&
+                                planet.getMarket().getSurveyLevel() != MarketAPI.SurveyLevel.PRELIMINARY) continue;
+                    }
+                    // If research setting is set to "Passively"
+                    else if (researchSetting.equals("Passively")) {
+                        // Skip if planet memory has $celorb_PassivelyDiscovered unset or set to false
+                        if (!planet.getMemoryWithoutUpdate().getBoolean("$celorb_PassivelyDiscovered")) continue;
 
-                        float comparingOrbitalPeriod = getComparingOrbitalPeriod(researchTimeSetting, planet);
-                        // Not enough time spent in system means the planet does not draw its orbit yet
-                        if (comparingOrbitalPeriod > planet.getStarSystem().getMemoryWithoutUpdate()
-                                .getFloat("$celorb_daysSpentInSystem")) continue;
+                    }
+                    // If research setting is set to "Orbital"
+                    else if (researchSetting.equals("Orbital")) {
+                        // Skip if planet memory has $celorb_isMeasured unset or set to false
+                        if (!planet.getMemoryWithoutUpdate().getBoolean("$celorb_isMeasured")) continue;
                     }
                 }
 
@@ -259,9 +256,9 @@ public class EntityOrbitRenderer extends BaseCustomEntityPlugin {
                 if (courseFocusSetting == null)
                     throw new RuntimeException("Unable to find LunaSetting 'celorb_courseFocusRadio' for mod 'PN_CelestialOrbits'");
 
-                // Run Course Focus coloring
+                // Run "Course Focus" coloring
                 if (currentCourseTarget != null && currentCourseTarget.getOrbitFocus() != null) {
-                    // If Course Focus is set to "Highlight"
+                    // If "Course Focus" is set to "Highlight"
                     if (courseFocusSetting.equals("Highlight") && currentCourseTarget == uniqueOrbit.getKey()) {
                         Color color = new Color(241, 185, 0);
                         if (color != null) {
@@ -271,7 +268,7 @@ public class EntityOrbitRenderer extends BaseCustomEntityPlugin {
                             dAlpha = 0.18f;
                         }
                     }
-                    // If Course Focus is set to "Filter"
+                    // If "Course Focus" is set to "Filter"
                     else if (courseFocusSetting.equals("Filter")) {
                         Color color = new Color(241, 185, 0);
                         if (color != null) {
@@ -284,12 +281,12 @@ public class EntityOrbitRenderer extends BaseCustomEntityPlugin {
                         center = currentCourseTarget.getOrbitFocus().getLocation();
                         radius = currentCourseTarget.getCircularOrbitRadius();
                         // Draw orbit and stop the loop early since no more need to be drawn anyhow
-                        drawEntityOrbit(segments, center, radius, thickness);
+                        drawEntityOrbit(center, radius, viewport);
                         break;
                     }
                 }
 
-                drawEntityOrbit(segments, center, radius, thickness);
+                drawEntityOrbit(center, radius, viewport);
             }
         }
 
@@ -297,40 +294,26 @@ public class EntityOrbitRenderer extends BaseCustomEntityPlugin {
     }
 
     /**
-     * Get correct orbital period for the research time settings for "Witnessed" Orbit Research
-     * @param researchTimeSetting Setting for the research time
-     * @param planet Planet object
-     * @return The orbital period that will be compared against for if it has passed or not
-     */
-    private static float getComparingOrbitalPeriod(String researchTimeSetting, PlanetAPI planet) {
-        float comparingOrbitalPeriod;
-        if (researchTimeSetting.equals("Quarter Rotation")) {
-            comparingOrbitalPeriod = planet.getOrbit().getOrbitalPeriod()/4;
-        }
-        else if (researchTimeSetting.equals("Half Rotation")) {
-            comparingOrbitalPeriod = planet.getOrbit().getOrbitalPeriod()/2;
-        }
-        else {
-            comparingOrbitalPeriod = planet.getOrbit().getOrbitalPeriod();
-        }
-        return comparingOrbitalPeriod;
-    }
-
-    /**
      * Draws the entity orbit
-     * @param segments Amount of segments the orbits need to be drawn in
      * @param center The center coords of the entity's orbital center
      * @param radius The radius that the entity's orbit needs to be drawn in
-     * @param thickness The thickness of the orbit lines
      */
-    private void drawEntityOrbit(int segments, Vector2f center, float radius, float thickness) {
+    private void drawEntityOrbit(Vector2f center, float radius, ViewportAPI viewport) {
+
+        // The thickness of the orbit lines
+        float thickness = Math.max(1.5f, viewport.getViewMult() * 2f); // Zoom-scaled thickness
+        // Amount of segments the orbits need to be drawn in
+        int segments = 192; // 128–256
+
         GL11.glEnable(GL11.GL_BLEND);
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
         GL11.glDisable(GL11.GL_TEXTURE_2D);
 
+        // Set color of the entity's orbit
         GL11.glColor4f(dRed, dGreen, dBlue, dAlpha);
 
+        // Begin drawing sequence
         GL11.glBegin(GL11.GL_TRIANGLE_STRIP);
 
         for (int i = 0; i <= segments; i++) {
@@ -352,7 +335,7 @@ public class EntityOrbitRenderer extends BaseCustomEntityPlugin {
                     center.y + sin * (radius - thickness)
             );
         }
-
+        // End drawing sequence
         GL11.glEnd();
     }
 
@@ -400,6 +383,7 @@ public class EntityOrbitRenderer extends BaseCustomEntityPlugin {
             entityBlacklist.add(Entities.STATION_RESEARCH_REMNANT);
             entityBlacklist.add(Entities.ORBITAL_HABITAT_REMNANT);
         }
+        entityBlacklist.add(Entities.CORONAL_TAP);
         entityBlacklist.add(Entities.DERELICT_SURVEY_PROBE);
         entityBlacklist.add(Entities.DERELICT_SURVEY_SHIP);
         entityBlacklist.add(Entities.DERELICT_MOTHERSHIP);
