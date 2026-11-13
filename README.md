@@ -62,3 +62,6 @@ No AI was used in the creation of this mod's code or graphical assets
 - Vexlia & Crablobab for helping me identify orbital junk entities
 - Wymorlon for helping me think of a name for the mod
 - Kaysaar for pointing me in the right direction of using custom entities & VoK's way of handling the Nidavelir
+
+## License
+https://creativecommons.org/licenses/by-nc-nd/4.0/
