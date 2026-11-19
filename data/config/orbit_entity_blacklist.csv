@@ -1,0 +1,59 @@
+customEntityTypeId,showWithAllCelestialObjects
+# Explanation:
+# - customEntityTypeId = ID as shown in your mod's custom_entities.json
+# - showWithAllCelestialObjects = Whether you wish to have it show when "All Celestial Objects" is the visual setting
+#
+# ====== Natively supported entities ======
+# ---------------- Vanilla ----------------
+comm_relay,true
+nav_buoy,true
+sensor_array,true
+comm_relay_makeshift,true
+nav_buoy_makeshift,true
+sensor_array_makeshift,true
+inactive_gate,true
+orbital_dockyard,true
+makeshift_station,true
+station_mining_remnant,true
+station_research_remnant,true
+orbital_habitat_remnant,true
+derelict_probe,false
+derelict_survey_ship,false
+derelict_mothership,false
+derelict_gatehauler,false
+derelict_cryosleeper,false
+coronal_tap,false
+limbo_wormhole_cache,false
+large_cache,false
+debris_field_shared,false
+stable_location,false
+mission_location,false
+fusion_lamp,false
+generic_probe,false
+cargo_pod_special,false
+stellar_mirror,false
+stellar_shade,false
+cargo_pods,false
+warning_beacon,false
+technology_cache,false
+supply_cache,false
+supply_cache_small,false
+equipment_cache,false
+equipment_cache_small,false
+weapons_cache,false
+weapons_cache_low,false
+weapons_cache_high,false
+weapons_cache_remnant,false
+weapons_cache_small,false
+weapons_cache_small_low,false
+weapons_cache_small_high,false
+weapons_cache_small_remnant,false
+hidden_cache,false
+alpha_site_weapons_cache,false
+generic_probe_active,false
+wreck,false
+base_constellation_label,false
+base_intel_icon,false
+explosion,false
+sensor_ghost,false
+abyssal_light,false

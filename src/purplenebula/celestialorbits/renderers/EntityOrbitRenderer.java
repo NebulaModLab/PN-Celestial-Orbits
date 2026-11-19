@@ -21,12 +21,16 @@ import com.fs.starfarer.campaign.comms.v2.IntelManager;
 import com.fs.starfarer.campaign.fleet.CampaignFleet;
 import lunalib.lunaSettings.LunaSettings;
 import org.apache.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.lazywizard.console.Console;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Vector2f;
 import purplenebula.celestialorbits.intel.PlanetOrbitDiscoveryIntel;
 
 import java.awt.*;
+import java.io.IOException;
 import java.util.*;
 import java.util.List;
 
@@ -75,7 +79,13 @@ public class EntityOrbitRenderer extends BaseCustomEntityPlugin {
         if (!visualsSetting.equals(LunaSettings.getString("PN_CelestialOrbits", "celorb_visualsRadio")) ||
         !researchSetting.equals(LunaSettings.getString("PN_CelestialOrbits", "celorb_researchRadio"))) {
             uniqueOrbits.clear();
-            entityBlacklist = populateEntityBlacklist();
+            visualsSetting = LunaSettings.getString("PN_CelestialOrbits", "celorb_visualsRadio");
+            researchSetting = LunaSettings.getString("PN_CelestialOrbits", "celorb_researchRadio");
+            try {
+                entityBlacklist = populateEntityBlacklist();
+            } catch (JSONException | IOException e) {
+                throw new RuntimeException(e);
+            }
             filteredDuplicateRadii = false;
         }
 
@@ -174,7 +184,12 @@ public class EntityOrbitRenderer extends BaseCustomEntityPlugin {
                 if (uniqueOrbit.getKey().getCustomEntityType() != null) {
                     boolean skipEntity = false;
 //                    if (entityBlacklist == null || entityBlacklist.isEmpty())
-                        entityBlacklist = populateEntityBlacklist();
+                    try {
+                        if (entityBlacklist == null || entityBlacklist.isEmpty())
+                                entityBlacklist = populateEntityBlacklist();
+                    } catch (JSONException | IOException e) {
+                        throw new RuntimeException(e);
+                    }
                     for (String blacklistedEntityType : entityBlacklist) {
                         if (uniqueOrbit.getKey().getCustomEntityType().equals(blacklistedEntityType)) {
                             skipEntity = true;
@@ -365,60 +380,79 @@ public class EntityOrbitRenderer extends BaseCustomEntityPlugin {
      * Populates the blacklist with entity types
      * @return Entire String Set containing the blacklisted entities
      */
-    public Set<String> populateEntityBlacklist() {
+    public Set<String> populateEntityBlacklist() throws JSONException, IOException {
         Set<String> entityBlacklist = new HashSet<>();
-        if (!visualsSetting.equals("All Celestial Objects")) {
-            entityBlacklist.add(Entities.DERELICT_GATEHAULER);
-            entityBlacklist.add(Entities.DERELICT_CRYOSLEEPER);
-            entityBlacklist.add(Entities.COMM_RELAY);
-            entityBlacklist.add(Entities.NAV_BUOY);
-            entityBlacklist.add(Entities.SENSOR_ARRAY);
-            entityBlacklist.add(Entities.COMM_RELAY_MAKESHIFT);
-            entityBlacklist.add(Entities.NAV_BUOY_MAKESHIFT);
-            entityBlacklist.add(Entities.SENSOR_ARRAY_MAKESHIFT);
-            entityBlacklist.add(Entities.INACTIVE_GATE);
-            entityBlacklist.add(Entities.ORBITAL_DOCKYARD);
-            entityBlacklist.add(Entities.MAKESHIFT_STATION);
-            entityBlacklist.add(Entities.STATION_MINING_REMNANT);
-            entityBlacklist.add(Entities.STATION_RESEARCH_REMNANT);
-            entityBlacklist.add(Entities.ORBITAL_HABITAT_REMNANT);
+
+        JSONArray mergedArray = Global.getSettings().getMergedSpreadsheetData("customEntityTypeId","data/config/orbit_entity_blacklist.csv");
+        for (int i = 0; i < mergedArray.length(); i++) {
+            JSONObject entry = mergedArray.getJSONObject(i);
+            String customEntityTypeId = entry.getString("customEntityTypeId");
+            boolean showWithAllCelestialObjects = entry.getBoolean("showWithAllCelestialObjects");
+
+            // If show all celestial objects, skip showWIthAllCelestialObjects entries from being blacklisted
+            if (visualsSetting.equals("All Celestial Objects")) {
+                if (showWithAllCelestialObjects) continue;
+                entityBlacklist.add(customEntityTypeId);
+            }
+            // If not all celestial objects, blacklist everything.
+            else {
+                entityBlacklist.add(customEntityTypeId);
+            }
+
         }
-        entityBlacklist.add(Entities.CORONAL_TAP);
-        entityBlacklist.add(Entities.DERELICT_SURVEY_PROBE);
-        entityBlacklist.add(Entities.DERELICT_SURVEY_SHIP);
-        entityBlacklist.add(Entities.DERELICT_MOTHERSHIP);
-        entityBlacklist.add(Entities.SPEC_LIMBO_WORMHOLE_CACHE);
-        entityBlacklist.add(Entities.LARGE_CACHE);
-        entityBlacklist.add(Entities.DEBRIS_FIELD_SHARED);
-        entityBlacklist.add(Entities.STABLE_LOCATION);
-        entityBlacklist.add(Entities.MISSION_LOCATION);
-        entityBlacklist.add(Entities.FUSION_LAMP);
-        entityBlacklist.add(Entities.GENERIC_PROBE);
-        entityBlacklist.add(Entities.CARGO_POD_SPECIAL);
-        entityBlacklist.add(Entities.STELLAR_MIRROR);
-        entityBlacklist.add(Entities.STELLAR_SHADE);
-        entityBlacklist.add(Entities.CARGO_PODS);
-        entityBlacklist.add(Entities.WARNING_BEACON);
-        entityBlacklist.add(Entities.TECHNOLOGY_CACHE);
-        entityBlacklist.add(Entities.SUPPLY_CACHE);
-        entityBlacklist.add(Entities.SUPPLY_CACHE_SMALL);
-        entityBlacklist.add(Entities.EQUIPMENT_CACHE);
-        entityBlacklist.add(Entities.EQUIPMENT_CACHE_SMALL);
-        entityBlacklist.add(Entities.WEAPONS_CACHE);
-        entityBlacklist.add(Entities.WEAPONS_CACHE_LOW);
-        entityBlacklist.add(Entities.WEAPONS_CACHE_HIGH);
-        entityBlacklist.add(Entities.WEAPONS_CACHE_REMNANT);
-        entityBlacklist.add(Entities.WEAPONS_CACHE_SMALL);
-        entityBlacklist.add(Entities.WEAPONS_CACHE_SMALL_LOW);
-        entityBlacklist.add(Entities.WEAPONS_CACHE_SMALL_HIGH);
-        entityBlacklist.add(Entities.WEAPONS_CACHE_SMALL_REMNANT);
-        entityBlacklist.add(Entities.HIDDEN_CACHE);
-        entityBlacklist.add(Entities.ALPHA_SITE_WEAPONS_CACHE);
-        entityBlacklist.add(Entities.GENERIC_PROBE_ACTIVE);
-        entityBlacklist.add(Entities.WRECK);
-        entityBlacklist.add(Entities.BASE_CONSTELLATION_LABEL);
-        entityBlacklist.add(Entities.BASE_INTEL_ICON);
-        entityBlacklist.add(Entities.EXPLOSION);
+
+//        if (!visualsSetting.equals("All Celestial Objects")) {
+//            entityBlacklist.add(Entities.DERELICT_GATEHAULER);
+//            entityBlacklist.add(Entities.DERELICT_CRYOSLEEPER);
+//            entityBlacklist.add(Entities.COMM_RELAY);
+//            entityBlacklist.add(Entities.NAV_BUOY);
+//            entityBlacklist.add(Entities.SENSOR_ARRAY);
+//            entityBlacklist.add(Entities.COMM_RELAY_MAKESHIFT);
+//            entityBlacklist.add(Entities.NAV_BUOY_MAKESHIFT);
+//            entityBlacklist.add(Entities.SENSOR_ARRAY_MAKESHIFT);
+//            entityBlacklist.add(Entities.INACTIVE_GATE);
+//            entityBlacklist.add(Entities.ORBITAL_DOCKYARD);
+//            entityBlacklist.add(Entities.MAKESHIFT_STATION);
+//            entityBlacklist.add(Entities.STATION_MINING_REMNANT);
+//            entityBlacklist.add(Entities.STATION_RESEARCH_REMNANT);
+//            entityBlacklist.add(Entities.ORBITAL_HABITAT_REMNANT);
+//        }
+//        entityBlacklist.add(Entities.CORONAL_TAP);
+//        entityBlacklist.add(Entities.DERELICT_SURVEY_PROBE);
+//        entityBlacklist.add(Entities.DERELICT_SURVEY_SHIP);
+//        entityBlacklist.add(Entities.DERELICT_MOTHERSHIP);
+//        entityBlacklist.add(Entities.SPEC_LIMBO_WORMHOLE_CACHE);
+//        entityBlacklist.add(Entities.LARGE_CACHE);
+//        entityBlacklist.add(Entities.DEBRIS_FIELD_SHARED);
+//        entityBlacklist.add(Entities.STABLE_LOCATION);
+//        entityBlacklist.add(Entities.MISSION_LOCATION);
+//        entityBlacklist.add(Entities.FUSION_LAMP);
+//        entityBlacklist.add(Entities.GENERIC_PROBE);
+//        entityBlacklist.add(Entities.CARGO_POD_SPECIAL);
+//        entityBlacklist.add(Entities.STELLAR_MIRROR);
+//        entityBlacklist.add(Entities.STELLAR_SHADE);
+//        entityBlacklist.add(Entities.CARGO_PODS);
+//        entityBlacklist.add(Entities.WARNING_BEACON);
+//        entityBlacklist.add(Entities.TECHNOLOGY_CACHE);
+//        entityBlacklist.add(Entities.SUPPLY_CACHE);
+//        entityBlacklist.add(Entities.SUPPLY_CACHE_SMALL);
+//        entityBlacklist.add(Entities.EQUIPMENT_CACHE);
+//        entityBlacklist.add(Entities.EQUIPMENT_CACHE_SMALL);
+//        entityBlacklist.add(Entities.WEAPONS_CACHE);
+//        entityBlacklist.add(Entities.WEAPONS_CACHE_LOW);
+//        entityBlacklist.add(Entities.WEAPONS_CACHE_HIGH);
+//        entityBlacklist.add(Entities.WEAPONS_CACHE_REMNANT);
+//        entityBlacklist.add(Entities.WEAPONS_CACHE_SMALL);
+//        entityBlacklist.add(Entities.WEAPONS_CACHE_SMALL_LOW);
+//        entityBlacklist.add(Entities.WEAPONS_CACHE_SMALL_HIGH);
+//        entityBlacklist.add(Entities.WEAPONS_CACHE_SMALL_REMNANT);
+//        entityBlacklist.add(Entities.HIDDEN_CACHE);
+//        entityBlacklist.add(Entities.ALPHA_SITE_WEAPONS_CACHE);
+//        entityBlacklist.add(Entities.GENERIC_PROBE_ACTIVE);
+//        entityBlacklist.add(Entities.WRECK);
+//        entityBlacklist.add(Entities.BASE_CONSTELLATION_LABEL);
+//        entityBlacklist.add(Entities.BASE_INTEL_ICON);
+//        entityBlacklist.add(Entities.EXPLOSION);
 
         return entityBlacklist;
     }
